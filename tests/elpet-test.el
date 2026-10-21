@@ -10,11 +10,11 @@
 
 (ert-deftest elpet-choice-handles-singletons ()
   (let ((elpet--animation nil))
-    (should (equal (elpet--choose 'idle) "daiji-huxi-xiuxian")))
-  (let ((elpet--animation "daiji-huxi-xiuxian"))
-    (should (equal (elpet--choose 'idle) "daiji-huxi-xiuxian")))
-  (let ((elpet--animation "da-keshui-bei-jingxing"))
-    (should (equal (elpet--choose 'sleeping) "da-keshui-bei-jingxing"))))
+    (should (equal (elpet--choose 'idle) "idle")))
+  (let ((elpet--animation "idle"))
+    (should (equal (elpet--choose 'idle) "idle")))
+  (let ((elpet--animation "sleeping"))
+    (should (equal (elpet--choose 'sleeping) "sleeping"))))
 
 (ert-deftest elpet-missing-assets-report-useful-error ()
   (let ((elpet-assets-directory (make-temp-file "pet-no-assets" t)))
@@ -102,7 +102,7 @@
                 ((symbol-function 'insert-image) (lambda (&rest _) (insert "pet")))
                 ((symbol-function 'image-animate)
                  (lambda (&rest _) (setq animation-buffer (current-buffer)))))
-        (with-temp-buffer (elpet--play 'idle "daiji-huxi-xiuxian"))
+        (with-temp-buffer (elpet--play 'idle "idle"))
         (should (eq animation-buffer elpet--buffer))))))
 
 (ert-deftest elpet-child-frame-preserves-parent-and-hides-mode-line ()
@@ -201,7 +201,7 @@
                (dolist (width '(180 220 440))
                  (setq elpet-width width)
                  (dolist (state '(idle working happy))
-                   (elpet--play state "daiji-huxi-xiuxian")
+                   (elpet--play state "idle")
                    (redisplay t)
                    (let* ((bubble (with-current-buffer elpet--buffer
                                     (get-text-property (point-min) 'display)))
@@ -229,7 +229,7 @@
                 ((symbol-function 'elpet-set-state)
                  (lambda (state &optional _) (setq requested-state state))))
         ;; Use real `insert-image': its image keymap used to mask pet clicks.
-        (elpet--play 'idle "daiji-huxi-xiuxian")
+        (elpet--play 'idle "idle")
         (dolist (position (list (point-min) (1- (point-max))))
           (let ((map (get-text-property position 'keymap)))
             (should (eq (lookup-key map [down-mouse-1])
@@ -309,13 +309,13 @@
         (elpet-trim-transparent-margins t)
         elpet--image-slice elpet--sprite-height
         elpet--sprite-width elpet--display-width)
-    (elpet--layout "daiji-huxi-xiuxian" "陪你摸鱼")
+    (elpet--layout "idle" "陪你摸鱼")
     (should (= elpet--sprite-width 87))
     (should (= elpet--sprite-height 97))
     (should (= elpet--display-width 92))
     (should (= (length elpet--image-slice) 4))
     (setq elpet-width 440)
-    (elpet--layout "daiji-huxi-xiuxian" "陪你摸鱼")
+    (elpet--layout "idle" "陪你摸鱼")
     (should (= elpet--sprite-width 174))
     (should (= elpet--display-width 184))))
 
@@ -324,9 +324,9 @@
         (directory (make-temp-file "pet-crop-test" t)))
     (unwind-protect
         (let ((elpet-assets-directory directory))
-          (with-temp-file (elpet--asset "daiji-huxi-xiuxian")
+          (with-temp-file (elpet--asset "idle")
             (insert "Different asset with the same name"))
-          (should-not (elpet--crop "daiji-huxi-xiuxian")))
+          (should-not (elpet--crop "idle")))
       (delete-directory directory t))))
 
 (load (expand-file-name "elpet-core-test.el"

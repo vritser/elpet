@@ -1,18 +1,5 @@
 {
-  "da-keshui-bei-jingxing": {
-    "sha256": "4582e7cfd557c7dca8aa6cc98b5ca6f12944fe744f9fda700b589463c9e0aba7",
-    "size": [
-      220,
-      124
-    ],
-    "box": [
-      67,
-      5,
-      89,
-      111
-    ]
-  },
-  "daiji-huxi-xiuxian": {
+  "idle": {
     "sha256": "ab23562dafea476fd136909e4405b90150c7e9434a9e9d2ed4cb73d9f33ddce9",
     "size": [
       220,
@@ -25,46 +12,20 @@
       97
     ]
   },
-  "gongzuozhuangtai-chuitou-tanqi-maohan": {
-    "sha256": "10d59731c0ad8ab077d7974edef033827b4573e3512e06ebc1413806522f0304",
+  "sleeping": {
+    "sha256": "4582e7cfd557c7dca8aa6cc98b5ca6f12944fe744f9fda700b589463c9e0aba7",
     "size": [
       220,
       124
     ],
     "box": [
-      53,
-      15,
-      96,
-      101
+      67,
+      5,
+      89,
+      111
     ]
   },
-  "gongzuozhuangtai-manglu-dianan": {
-    "sha256": "bab6cb7eff739bac96e8e593b34b842270a5252ae631c0912bb23ab47ebb9a47",
-    "size": [
-      220,
-      124
-    ],
-    "box": [
-      60,
-      0,
-      95,
-      116
-    ]
-  },
-  "gongzuozhuangtai-queyue-qingzhu": {
-    "sha256": "59232775c660091beb5cbe8d8d3381ac04515291caf25ce93313c0fe85989173",
-    "size": [
-      220,
-      124
-    ],
-    "box": [
-      59,
-      4,
-      102,
-      112
-    ]
-  },
-  "gongzuozhuangtai-sikao-maopao": {
+  "thinking": {
     "sha256": "9d52ae5f84c4fa7e0249619b47b556ae26ff81168b5e712d8b5113645cc95546",
     "size": [
       220,
@@ -77,7 +38,20 @@
       99
     ]
   },
-  "gongzuozhuangtai-yuandi-duobu-zhangwang": {
+  "working": {
+    "sha256": "bab6cb7eff739bac96e8e593b34b842270a5252ae631c0912bb23ab47ebb9a47",
+    "size": [
+      220,
+      124
+    ],
+    "box": [
+      60,
+      0,
+      95,
+      116
+    ]
+  },
+  "waiting": {
     "sha256": "f90f0a28607fd132cb0b44a1e073e440039d25354d967af6f55cc4e3df221c6b",
     "size": [
       220,
@@ -90,7 +64,33 @@
       103
     ]
   },
-  "yuandi-qiaoji-zhuomian-hudong": {
+  "success": {
+    "sha256": "59232775c660091beb5cbe8d8d3381ac04515291caf25ce93313c0fe85989173",
+    "size": [
+      220,
+      124
+    ],
+    "box": [
+      59,
+      4,
+      102,
+      112
+    ]
+  },
+  "error": {
+    "sha256": "10d59731c0ad8ab077d7974edef033827b4573e3512e06ebc1413806522f0304",
+    "size": [
+      220,
+      124
+    ],
+    "box": [
+      53,
+      15,
+      96,
+      101
+    ]
+  },
+  "happy": {
     "sha256": "21b3d32fe49529ef129257506c6571dfc55d9324216405bf0567f9fcfeadee3c",
     "size": [
       220,

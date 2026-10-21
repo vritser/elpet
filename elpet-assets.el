@@ -17,14 +17,14 @@
 	      id root author license source fallback crops states catalog index)
 
 (defconst elpet--animations
-  '((idle . ("daiji-huxi-xiuxian"))
-    (sleeping . ("da-keshui-bei-jingxing"))
-    (thinking . ("gongzuozhuangtai-sikao-maopao"))
-    (working . ("gongzuozhuangtai-manglu-dianan"))
-    (waiting . ("gongzuozhuangtai-yuandi-duobu-zhangwang"))
-    (success . ("gongzuozhuangtai-queyue-qingzhu"))
-    (error . ("gongzuozhuangtai-chuitou-tanqi-maohan"))
-    (happy . ("yuandi-qiaoji-zhuomian-hudong")))
+  '((idle . ("idle"))
+    (sleeping . ("sleeping"))
+    (thinking . ("thinking"))
+    (working . ("working"))
+    (waiting . ("waiting"))
+    (success . ("success"))
+    (error . ("error"))
+    (happy . ("happy")))
   "Default state mapping, also used for legacy asset-directory configuration.")
 
 (defun elpet--pack-path (root relative)

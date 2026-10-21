@@ -1,6 +1,6 @@
 # Asset attribution and usage terms
 
-The GIFs in this directory come from `dsh-pet/assets/preview/` in [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet). This repository preserves the original GIF files. `idle.png` is a still frame extracted from the bundled idle animation for static fallback; it retains the same attribution and usage terms.
+The GIFs in this directory are derived from `dsh-pet/assets/preview/` in [PC2005-cloud/dsh-pet](https://github.com/PC2005-cloud/dsh-pet). The artwork is unchanged; the built-in pack uses semantic file names and [SOURCE.md](SOURCE.md) records the original upstream file names. `idle.png` is a still frame extracted from the bundled idle animation for static fallback; it retains the same attribution and usage terms.
 
 The repository ships a small built-in pack (one action per state). The complete
 animation set is published as the `elpet-pack-full-v1.tar.gz` asset in the

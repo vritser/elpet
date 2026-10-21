@@ -15,64 +15,64 @@
   "states": {
     "idle": [
       {
-        "name": "daiji-huxi-xiuxian",
-        "file": "assets/daiji-huxi-xiuxian.gif",
+        "name": "idle",
+        "file": "assets/idle.gif",
         "weight": 3,
         "loop": true
       }
     ],
     "sleeping": [
       {
-        "name": "da-keshui-bei-jingxing",
-        "file": "assets/da-keshui-bei-jingxing.gif",
+        "name": "sleeping",
+        "file": "assets/sleeping.gif",
         "weight": 1,
         "loop": true
       }
     ],
     "thinking": [
       {
-        "name": "gongzuozhuangtai-sikao-maopao",
-        "file": "assets/gongzuozhuangtai-sikao-maopao.gif",
+        "name": "thinking",
+        "file": "assets/thinking.gif",
         "weight": 1,
         "loop": true
       }
     ],
     "working": [
       {
-        "name": "gongzuozhuangtai-manglu-dianan",
-        "file": "assets/gongzuozhuangtai-manglu-dianan.gif",
+        "name": "working",
+        "file": "assets/working.gif",
         "weight": 1,
         "loop": true
       }
     ],
     "waiting": [
       {
-        "name": "gongzuozhuangtai-yuandi-duobu-zhangwang",
-        "file": "assets/gongzuozhuangtai-yuandi-duobu-zhangwang.gif",
+        "name": "waiting",
+        "file": "assets/waiting.gif",
         "weight": 1,
         "loop": true
       }
     ],
     "success": [
       {
-        "name": "gongzuozhuangtai-queyue-qingzhu",
-        "file": "assets/gongzuozhuangtai-queyue-qingzhu.gif",
+        "name": "success",
+        "file": "assets/success.gif",
         "weight": 1,
         "loop": true
       }
     ],
     "error": [
       {
-        "name": "gongzuozhuangtai-chuitou-tanqi-maohan",
-        "file": "assets/gongzuozhuangtai-chuitou-tanqi-maohan.gif",
+        "name": "error",
+        "file": "assets/error.gif",
         "weight": 1,
         "loop": true
       }
     ],
     "happy": [
       {
-        "name": "yuandi-qiaoji-zhuomian-hudong",
-        "file": "assets/yuandi-qiaoji-zhuomian-hudong.gif",
+        "name": "happy",
+        "file": "assets/happy.gif",
         "weight": 1,
         "loop": true
       }
