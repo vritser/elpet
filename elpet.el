@@ -58,7 +58,7 @@
   :group 'elpet)
 
 (defcustom elpet-assets-directory
-  (expand-file-name "assets/animations/"
+  (expand-file-name "assets/"
                     (file-name-directory (or load-file-name buffer-file-name)))
   "Directory containing the original GIF animations."
   :type 'directory)
@@ -953,7 +953,7 @@ Interactively, select an available animation for the default displayed pet."
              (or (not (equal (expand-file-name elpet-pack-file)
                              (expand-file-name "pack.json" elpet--directory)))
                  (equal (file-truename elpet-assets-directory)
-                        (file-truename (expand-file-name "assets/animations/" elpet--directory))))
+                        (file-truename (expand-file-name "assets/" elpet--directory))))
              (elpet-load-pack elpet-pack-file)))
   (setf (elpet-instance-pack elpet--default-instance) elpet--pack)
   (elpet-register-source "compilation" nil elpet--default-instance)
