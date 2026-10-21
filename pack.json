@@ -1,0 +1,81 @@
+{
+  "schema-version": 1,
+  "pack-id": "elpet-core",
+  "author": "PC2005-cloud",
+  "source": "https://github.com/PC2005-cloud/dsh-pet",
+  "license": "Open-source use allowed; commercial use prohibited. Retain upstream attribution.",
+  "fallback": "assets/idle.png",
+  "crops": "crops.json",
+  "anchor": [
+    110,
+    116
+  ],
+  "orientation": "right",
+  "mirror": false,
+  "states": {
+    "idle": [
+      {
+        "name": "daiji-huxi-xiuxian",
+        "file": "assets/preview/daiji-huxi-xiuxian.gif",
+        "weight": 3,
+        "loop": true
+      }
+    ],
+    "sleeping": [
+      {
+        "name": "da-keshui-bei-jingxing",
+        "file": "assets/preview/da-keshui-bei-jingxing.gif",
+        "weight": 1,
+        "loop": true
+      }
+    ],
+    "thinking": [
+      {
+        "name": "gongzuozhuangtai-sikao-maopao",
+        "file": "assets/preview/gongzuozhuangtai-sikao-maopao.gif",
+        "weight": 1,
+        "loop": true
+      }
+    ],
+    "working": [
+      {
+        "name": "gongzuozhuangtai-manglu-dianan",
+        "file": "assets/preview/gongzuozhuangtai-manglu-dianan.gif",
+        "weight": 1,
+        "loop": true
+      }
+    ],
+    "waiting": [
+      {
+        "name": "gongzuozhuangtai-yuandi-duobu-zhangwang",
+        "file": "assets/preview/gongzuozhuangtai-yuandi-duobu-zhangwang.gif",
+        "weight": 1,
+        "loop": true
+      }
+    ],
+    "success": [
+      {
+        "name": "gongzuozhuangtai-queyue-qingzhu",
+        "file": "assets/preview/gongzuozhuangtai-queyue-qingzhu.gif",
+        "weight": 1,
+        "loop": true
+      }
+    ],
+    "error": [
+      {
+        "name": "gongzuozhuangtai-chuitou-tanqi-maohan",
+        "file": "assets/preview/gongzuozhuangtai-chuitou-tanqi-maohan.gif",
+        "weight": 1,
+        "loop": true
+      }
+    ],
+    "happy": [
+      {
+        "name": "yuandi-qiaoji-zhuomian-hudong",
+        "file": "assets/preview/yuandi-qiaoji-zhuomian-hudong.gif",
+        "weight": 1,
+        "loop": true
+      }
+    ]
+  }
+}
