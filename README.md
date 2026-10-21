@@ -54,8 +54,10 @@ You can also configure options with `M-x customize-group RET elpet RET`. Display
 
 The repository ships a small built-in pack with one action per state, so the
 pet works immediately after installation. The complete animation set is
-published as the `elpet-pack-full-v1.tar.gz` asset on the
-[releases page](https://github.com/vritser/elpet/releases), not in git history.
+published as the `elpet-pack-full-v1.tar.gz` asset in the
+[assets-v1 release](https://github.com/vritser/elpet/releases/tag/assets-v1),
+not in git history. Its SHA-256 is
+`337babf472082d4b187fdb24876df0a6d1abcf67833dd76e54d5df11fdb60f25`.
 
 To install the full pack:
 
