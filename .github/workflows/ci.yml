@@ -1,0 +1,51 @@
+name: CI
+
+# SPDX-License-Identifier: MIT
+# The definition of done from AGENTS.md: syntax and package headers, a strict
+# byte-compile, the full batch suite, a clean load, and tree hygiene.  GUI tests
+# skip themselves in batch mode and stay a local/manual check.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: verify (Emacs ${{ matrix.emacs }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        # 30.1 is the declared baseline; 31.1 catches compatibility
+        # regressions in the other direction.
+        emacs: ['30.1', '31.1']
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Install Emacs
+        uses: jcs090218/setup-emacs@master
+        with:
+          version: ${{ matrix.emacs }}
+
+      - name: Show Emacs version
+        run: emacs --version
+
+      - name: Run the verification gate
+        run: scripts/verify.sh
+
+      - name: Diagnose a failed suite
+        if: failure()
+        run: |
+          emacs -Q --batch -L . -l tests/elpet-test.el \
+            -f ert-run-tests-batch-and-exit
