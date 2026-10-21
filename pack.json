@@ -16,7 +16,7 @@
     "idle": [
       {
         "name": "daiji-huxi-xiuxian",
-        "file": "assets/preview/daiji-huxi-xiuxian.gif",
+        "file": "assets/animations/daiji-huxi-xiuxian.gif",
         "weight": 3,
         "loop": true
       }
@@ -24,7 +24,7 @@
     "sleeping": [
       {
         "name": "da-keshui-bei-jingxing",
-        "file": "assets/preview/da-keshui-bei-jingxing.gif",
+        "file": "assets/animations/da-keshui-bei-jingxing.gif",
         "weight": 1,
         "loop": true
       }
@@ -32,7 +32,7 @@
     "thinking": [
       {
         "name": "gongzuozhuangtai-sikao-maopao",
-        "file": "assets/preview/gongzuozhuangtai-sikao-maopao.gif",
+        "file": "assets/animations/gongzuozhuangtai-sikao-maopao.gif",
         "weight": 1,
         "loop": true
       }
@@ -40,7 +40,7 @@
     "working": [
       {
         "name": "gongzuozhuangtai-manglu-dianan",
-        "file": "assets/preview/gongzuozhuangtai-manglu-dianan.gif",
+        "file": "assets/animations/gongzuozhuangtai-manglu-dianan.gif",
         "weight": 1,
         "loop": true
       }
@@ -48,7 +48,7 @@
     "waiting": [
       {
         "name": "gongzuozhuangtai-yuandi-duobu-zhangwang",
-        "file": "assets/preview/gongzuozhuangtai-yuandi-duobu-zhangwang.gif",
+        "file": "assets/animations/gongzuozhuangtai-yuandi-duobu-zhangwang.gif",
         "weight": 1,
         "loop": true
       }
@@ -56,7 +56,7 @@
     "success": [
       {
         "name": "gongzuozhuangtai-queyue-qingzhu",
-        "file": "assets/preview/gongzuozhuangtai-queyue-qingzhu.gif",
+        "file": "assets/animations/gongzuozhuangtai-queyue-qingzhu.gif",
         "weight": 1,
         "loop": true
       }
@@ -64,7 +64,7 @@
     "error": [
       {
         "name": "gongzuozhuangtai-chuitou-tanqi-maohan",
-        "file": "assets/preview/gongzuozhuangtai-chuitou-tanqi-maohan.gif",
+        "file": "assets/animations/gongzuozhuangtai-chuitou-tanqi-maohan.gif",
         "weight": 1,
         "loop": true
       }
@@ -72,7 +72,7 @@
     "happy": [
       {
         "name": "yuandi-qiaoji-zhuomian-hudong",
-        "file": "assets/preview/yuandi-qiaoji-zhuomian-hudong.gif",
+        "file": "assets/animations/yuandi-qiaoji-zhuomian-hudong.gif",
         "weight": 1,
         "loop": true
       }

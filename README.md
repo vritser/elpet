@@ -121,7 +121,7 @@ Supported states are `idle`, `sleeping`, `thinking`, `working`, `waiting`, `succ
 
 ## Current scope
 
-Version 0.1 provides one displayed pet, weighted animation playback, click interactions, dragging and position restoration, idle detection, reduced motion, bubble previews and history, compilation feedback, optional gptel chat, and a source-based event interface. Character packs are validated JSON data; missing actions fall back to idle or a static image. The pet lives inside Emacs, with a background matching the theme and a rectangular child frame. Roaming, throwing physics, balance displays, and multiple pets from the browser version are not implemented. The built-in preview GIFs are 220 × 124 pixels at approximately 12 fps; enlarging them reduces sharpness. Terminal Emacs cannot display the pet and reports that a graphical session is required.
+Version 0.1 provides one displayed pet, weighted animation playback, click interactions, dragging and position restoration, idle detection, reduced motion, bubble previews and history, compilation feedback, optional gptel chat, and a source-based event interface. Character packs are validated JSON data; missing actions fall back to idle or a static image. The pet lives inside Emacs, with a background matching the theme and a rectangular child frame. Roaming, throwing physics, balance displays, and multiple pets from the browser version are not implemented. The built-in GIFs are 220 × 124 pixels at approximately 12 fps; enlarging them reduces sharpness. Terminal Emacs cannot display the pet and reports that a graphical session is required.
 
 ## Experimental macOS NS background transparency
 
