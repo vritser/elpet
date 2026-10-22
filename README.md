@@ -85,7 +85,18 @@ format](docs/extension-api.md#character-packs) for the manifest schema and the
 
 Install and configure [gptel](https://github.com/karthink/gptel) through your usual Emacs package setup, then run `M-x elpet-chat` or choose **Chat** from the pet's right-click menu. The chat module loads gptel only when requested; animation and compilation feedback work without it. The dedicated chat buffer captures the current `gptel-backend` and `gptel-model` when created and uses gptel's existing authentication configuration. Opening a conversation never sends a request.
 
-Type after `You:` and use these commands:
+The conversation has a theme-aware title and numbered **YOU / PET** labels in a
+narrow left gutter beside each message's first line. The editable draft has an
+unnumbered **YOU** label, without a Message bar or persistent keyboard hints.
+Wrapped text stays aligned with the message body. The header shows only the chat
+identity and request status; the mode line shows the chat name and scroll position.
+Colors follow your Emacs theme; the body keeps your font, including monospaced
+code. Line numbers are hidden only in this buffer, and the previous layout
+settings are restored when `elpet-chat-mode` is disabled. No additional package
+is needed for this layout.
+
+Type beside the final, unnumbered **YOU** label. All shortcuts remain available;
+use `C-h m` (`describe-mode`) to look them up when needed:
 
 | Key | Action |
 | --- | --- |
@@ -104,7 +115,7 @@ Only one request runs at a time in the pet conversation. Stopping, killing the c
 
 Customize `elpet-chat-persona` for new conversations. Changes through `C-c C-p` affect only the current conversation. Chat uses completed conversation turns and the persona as context; tools, attached gptel context, and prompt transforms are disabled for these requests. Reasoning notifications are excluded from replies and bubbles. Ordinary gptel conversations are unaffected.
 
-Use `M-x elpet-chat-open` to restore an explicitly saved JSON conversation. Sessions are not saved automatically. The file contains completed messages, the persona, and the draft; it does not contain credentials, backend settings, or incomplete replies. Restoring uses the current gptel configuration and does not send anything. The adapter was verified against gptel 0.9.9.6 (`e7cebe4`) with simulated transports; no paid model request is part of the tests.
+Use `M-x elpet-chat-open` to restore an explicitly saved JSON conversation. Sessions are not saved automatically. The file contains completed messages, the persona, and the draft; it does not contain credentials, backend settings, or incomplete replies. Restoring uses the current gptel configuration and does not send anything. Restored history and completed replies are read-only; only the final draft beside the unnumbered **YOU** label is editable. You can still select and copy history. The adapter was verified against gptel 0.9.9.6 (`e7cebe4`) with simulated transports; no paid model request is part of the tests.
 
 ## Integration with other packages
 

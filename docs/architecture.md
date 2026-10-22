@@ -103,6 +103,31 @@ coordinate. Positions are restored only when the user has not customized the
 value explicitly, are clamped to the current layout, and are disabled by
 `elpet-remember-position` or `elpet-state-file`.
 
+## Chat presentation
+
+`elpet-chat.el` owns the native conversation layout as well as the request
+lifecycle. Named faces inherit the current theme; titles and role labels are
+presentation, not part of the stored turns or model context. The draft has an
+unnumbered YOU margin label anchored at the non-advancing input marker, with no
+textual composer heading or shortcut strip. Keybindings remain in the minor-mode
+map and its help, not in persistent chrome. Streaming appends
+raw reply text at the buffer end without replacing the layout or selecting a
+window; only windows already following the end advance with new chunks.
+Role labels use zero-length margin overlays anchored at each message's start,
+leaving Markdown at the true beginning of its source line. Their endpoints stay
+put when streaming text arrives. Rendering removes all previous role overlays
+before rebuilding them; killing the buffer also releases them.
+
+Everything before the draft marker carries native read-only properties as well
+as the existing change guard. A transcript property category supplies nonsticky
+boundary behavior even when Markdown clears direct stickiness properties, so
+restored history stays protected and the draft remains editable. Rendering and
+stream callbacks explicitly bind `inhibit-read-only` for their own writes.
+
+Chat mode saves and restores the buffer-local layout settings it changes,
+including the header, mode line, margins, wrapping, and line-number display.
+Markdown remains optional, and the same presentation works over plain text.
+
 ## Boundaries and non-goals
 
 - One displayed pet, one optional gptel conversation, one compilation source.

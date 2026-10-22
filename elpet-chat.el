@@ -33,6 +33,14 @@
   "Conversation label for user messages." :group 'elpet)
 (defface elpet-chat-pet '((t (:inherit success :weight bold)))
   "Conversation label for pet messages." :group 'elpet)
+(defface elpet-chat-title
+  '((t (:inherit variable-pitch :height 1.8 :weight bold)))
+  "Title of the pet conversation." :group 'elpet)
+(defface elpet-chat-meta '((t (:inherit shadow :height 0.9 :weight normal)))
+  "Secondary information in conversations." :group 'elpet)
+
+;; Fontification may remove rear-nonsticky text properties, but not this fallback.
+(put 'elpet-chat-transcript 'rear-nonsticky t)
 
 (defcustom elpet-chat-persona
   "You are a friendly Emacs companion. Reply naturally in the user's language. Keep replies concise unless asked for detail."
@@ -54,6 +62,8 @@
 (defvar-local elpet-chat--epoch nil)
 (defvar-local elpet-chat--sequence 0)
 (defvar-local elpet-chat--serial 0)
+(defvar-local elpet-chat--appearance nil)
+(defvar-local elpet-chat--window-margins nil)
 
 (defvar elpet-chat-mode-map
   (let ((map (make-sparse-keymap)))
@@ -68,7 +78,7 @@
 
 (define-minor-mode elpet-chat-mode
   "Pet conversation controls over Markdown or plain text.
-Type after You:, then use \\[elpet-chat-send] to send.
+Type beside the final unnumbered YOU label, then use \\[elpet-chat-send] to send.
 \\[elpet-chat-stop] stops, \\[elpet-chat-retry] retries the current
 draft, \\[elpet-chat-set-persona] sets the persona, and
 \\[elpet-chat-save] saves completed turns and the draft as JSON data.
@@ -77,19 +87,57 @@ installed."
   :lighter " Pet Chat"
   (if elpet-chat-mode
       (progn
+        (unless elpet-chat--appearance
+          (setq elpet-chat--appearance
+                (mapcar (lambda (variable)
+                          (list variable (local-variable-p variable)
+                                (symbol-value variable)))
+                        '(header-line-format mode-line-format line-spacing left-margin-width
+                          right-margin-width display-line-numbers
+                          visual-line-mode truncate-lines word-wrap)))
+          (setq elpet-chat--window-margins
+                (mapcar (lambda (window) (cons window (window-margins window)))
+                        (get-buffer-window-list (current-buffer) nil t))))
         (visual-line-mode 1)
-        (setq-local line-spacing 0.18
-                    header-line-format
-                    '(:eval (if elpet-chat--active
-                                " Pet Chat: responding · C-c C-k stop"
-                              " Pet Chat: C-c C-c send · C-c C-v markup · C-c C-s save")))
+        (setq-local line-spacing 0.22
+                    left-margin-width 9 right-margin-width 2
+                    display-line-numbers nil
+                    header-line-format '(:eval (elpet-chat--header-line))
+                    mode-line-format
+                    '(" " (:propertize "Pet Chat" face elpet-chat-meta) "  %p"))
         (add-hook 'kill-buffer-hook #'elpet-chat--cleanup nil t)
         (add-hook 'before-change-functions #'elpet-chat--protect-transcript nil t)
-        (cl-pushnew (current-buffer) elpet-chat--buffers))
+        (cl-pushnew (current-buffer) elpet-chat--buffers)
+        (dolist (window (get-buffer-window-list (current-buffer) nil t))
+          (set-window-margins window left-margin-width right-margin-width)))
     (elpet-chat--cleanup)
-    (kill-local-variable 'header-line-format)
+    (when elpet-chat--appearance
+      (visual-line-mode
+       (if (caddr (assq 'visual-line-mode elpet-chat--appearance)) 1 -1))
+      (pcase-dolist (`(,variable ,local ,value) elpet-chat--appearance)
+        (if local (set (make-local-variable variable) value)
+          (kill-local-variable variable)))
+      (dolist (window (get-buffer-window-list (current-buffer) nil t))
+        (let ((margins (if-let* ((saved (assq window elpet-chat--window-margins)))
+                           (cdr saved)
+                         (cons left-margin-width right-margin-width))))
+          (set-window-margins window (car margins) (cdr margins))))
+      (setq elpet-chat--appearance nil elpet-chat--window-margins nil))
     (remove-hook 'before-change-functions #'elpet-chat--protect-transcript t)
     (remove-hook 'kill-buffer-hook #'elpet-chat--cleanup t)))
+
+(defun elpet-chat--header-line ()
+  "Return the conversation identity and current request status."
+  (let ((status (cond (elpet-chat--active "Responding")
+                      ((null elpet-chat--last) "Ready")
+                      ((eq (elpet-chat--request-status elpet-chat--last) 'cancelled)
+                       "Stopped")
+                      (t "Needs attention")))
+        (face (cond (elpet-chat--active 'elpet-chat-pet)
+                    (elpet-chat--last 'warning)
+                    (t 'elpet-chat-meta))))
+    (list " " (propertize " ELPET " 'face 'elpet-chat-user)
+          "  " (propertize status 'face face))))
 
 (defun elpet-chat--setup ()
   "Set up optional Markdown rendering and the conversation controls."
@@ -141,31 +189,63 @@ Use a change guard because Markdown fontification manages sticky properties."
 (defun elpet-chat--render (draft)
   "Render completed turns and DRAFT without changing the selected window."
   (let ((inhibit-read-only t))
+    (remove-overlays (point-min) (point-max) 'elpet-chat-role t)
     (erase-buffer)
-    (insert (propertize "Pet Chat" 'font-lock-face '(:height 1.3 :weight bold)) "\n\n")
+    (insert "\n" (propertize "Pet Chat" 'font-lock-face 'elpet-chat-title
+                             'rear-nonsticky t) "\n")
+    (insert (propertize
+             (if elpet-chat--turns
+                 (format "%s  /  %d %s"
+                         (if (bound-and-true-p gptel-model) gptel-model "Conversation")
+                         (/ (length elpet-chat--turns) 2)
+                         (if (= (length elpet-chat--turns) 2) "exchange" "exchanges"))
+               "A little company, right here in Emacs.")
+             'font-lock-face 'elpet-chat-meta 'rear-nonsticky t) "\n\n")
     (cl-loop for turn in elpet-chat--turns for n from 0 do
-             (elpet-chat--insert-label (cl-evenp n))
+             (elpet-chat--insert-label (if (cl-evenp n) 'user 'pet) (1+ (/ n 2)))
              (insert turn "\n\n"))
     (when elpet-chat--last
-      (insert (format "[%s%s]\n"
-                      (elpet-chat--request-status elpet-chat--last)
-                      (if-let* ((error (elpet-chat--request-error elpet-chat--last)))
-                          (concat ": " error) "")))
+      (insert (propertize
+               (if (eq (elpet-chat--request-status elpet-chat--last) 'cancelled)
+                   "Reply stopped" "Could not finish the reply")
+               'font-lock-face 'warning 'rear-nonsticky t) "\n")
+      (when-let* ((error (elpet-chat--request-error elpet-chat--last)))
+        (insert error "\n"))
       (unless (string-empty-p (elpet-chat--request-response elpet-chat--last))
-        (insert "Incomplete reply (excluded from conversation history):\n"
+        (insert (propertize "Partial reply - not included in conversation history"
+                            'font-lock-face 'elpet-chat-meta 'rear-nonsticky t) "\n\n"
                 (elpet-chat--request-response elpet-chat--last) "\n"))
       (insert "\n"))
-    (elpet-chat--insert-label t)
+    (if elpet-chat--active
+        (elpet-chat--insert-label 'user (1+ (/ (length elpet-chat--turns) 2)))
+      (elpet-chat--insert-label 'input))
     (setq elpet-chat--input (copy-marker (point)))
     (insert draft)
+    (when elpet-chat--active
+      (insert "\n\n")
+      (elpet-chat--insert-label 'pet (1+ (/ (length elpet-chat--turns) 2))))
+    (add-text-properties (point-min) elpet-chat--input
+                         '(read-only t front-sticky (read-only)
+                           category elpet-chat-transcript))
     (setq buffer-read-only nil)
     (set-buffer-modified-p nil)))
 
-(defun elpet-chat--insert-label (user)
-  "Insert a separate conversation label for USER or the pet."
-  (insert (propertize (if user "You:" "Pet:")
-                      'font-lock-face (if user 'elpet-chat-user 'elpet-chat-pet))
-          "\n\n"))
+(defun elpet-chat--insert-label (role &optional turn)
+  "Display ROLE beside the next message or draft without inserting text.
+ROLE is `user', `pet', or `input'; TURN numbers a completed or pending exchange.
+An input label has no exchange number."
+  ;; A margin overlay leaves Markdown at the true beginning of its line.
+  ;; Neither endpoint advances when the first draft or reply text is inserted.
+  (let* ((pet (eq role 'pet))
+         (label (concat " "
+                        (propertize (if pet "PET" "YOU")
+                                    'face (if pet 'elpet-chat-pet 'elpet-chat-user))
+                        (when turn
+                          (propertize (format " %02d" turn) 'face 'elpet-chat-meta))))
+         (overlay (make-overlay (point) (point) nil nil nil)))
+    (overlay-put overlay 'elpet-chat-role t)
+    (overlay-put overlay 'before-string
+                 (propertize " " 'display `((margin left-margin) ,label)))))
 
 (defun elpet-chat--attach (&optional pet)
   "Attach the current conversation to PET, or the currently displayed pet."
@@ -303,16 +383,15 @@ Use a change guard because Markdown fontification manages sticky properties."
   (when elpet-chat--active (user-error "Stop the current reply before sending again"))
   (elpet-chat--require-gptel)
   (let ((prompt (string-trim (elpet-chat--draft))))
-    (when (string-empty-p prompt) (user-error "Type a message after You: first"))
+    (when (string-empty-p prompt) (user-error "Type a message beside the final YOU label first"))
     (elpet-chat--attach)
     (let ((request (elpet-chat--make-request
                     :buffer (current-buffer) :prompt prompt :status 'started
                     :id (format "request-%d" (cl-incf elpet-chat--serial)))))
       (setq elpet-chat--active request elpet-chat--last nil)
       (elpet-chat--render prompt)
-      (let ((inhibit-read-only t))
-        (goto-char (point-max)) (insert "\n\n") (elpet-chat--insert-label nil))
       (setq buffer-read-only t)
+      (force-mode-line-update)
       (elpet-chat--event request 'started)
       (condition-case err
           (let ((gptel-use-tools nil) (gptel-tools nil) (gptel-use-context nil))

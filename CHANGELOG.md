@@ -38,6 +38,14 @@ until a release changes the header, README, and this file together.
 
 ### Changed
 
+- Pet chat now uses a theme-aware title, numbered YOU / PET labels beside each
+  message's first line, and an unnumbered YOU label for the editable draft. The
+  header and mode line show status and position without repeated keyboard hints;
+  all shortcuts remain available through mode help. Previous buffer-local layout
+  settings and window-specific margins are restored when chat mode is disabled.
+  Markdown source, model prompts, and saved conversation data are unchanged.
+  (rationale: postmortem/003)
+
 - Character packs now build a single action index at load time. Asset lookup,
   loop rules, and completion no longer rescan the nested state lists on every
   redraw. (rationale: postmortem/002)
@@ -58,6 +66,10 @@ until a release changes the header, README, and this file together.
   literal.
 
 ### Fixed
+
+- Restored chat history and completed messages now carry native read-only
+  properties, in addition to the change guard. Markdown refontification does
+  not spread protection into the editable draft.
 
 - Chat command documentation now uses `\\[command]` references instead of
   embedded keycodes.
