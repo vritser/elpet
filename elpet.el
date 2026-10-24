@@ -26,6 +26,7 @@
 (require 'elpet-events)
 (require 'elpet-assets)
 (require 'elpet-render)
+(require 'elpet-markdown)
 (require 'elpet-persist)
 (require 'elpet-compilation)
 
@@ -180,6 +181,9 @@ Short messages use only the height they need."
       (let ((offset (max 0 (min (+ elpet--bubble-offset lines)
                                 (- (length elpet--bubble-all-lines)
                                    (elpet--bubble-line-limit))))))
+        (setq elpet--bubble-follow
+              (>= offset (- (length elpet--bubble-all-lines)
+                            (elpet--bubble-line-limit))))
         (unless (= offset elpet--bubble-offset)
           (setq elpet--bubble-offset offset)
           ;; Give the reader time to inspect the message without adding history.
@@ -303,7 +307,9 @@ Short messages use only the height they need."
   "Measure TEXT at the bubble's base font size."
   (if (not (display-graphic-p elpet--parent))
       (* 7 (string-width text))
-    (string-pixel-width (propertize text 'face '(:height 140)))))
+    (let ((styled (copy-sequence text)))
+      (add-face-text-property 0 (length styled) '(:height 140) nil styled)
+      (string-pixel-width styled))))
 
 (defun elpet--docking-window ()
   "Return the editing window containing or docking the pet."
@@ -336,13 +342,31 @@ Short messages use only the height they need."
       (max 1 (min elpet-bubble-max-lines
                   (1+ (floor (/ (- available (* 46 scale)) (* 22 scale)))))))))
 
-(defun elpet--text-lines (text)
-  "Wrap all of TEXT to the bubble's text width."
-  (let ((lines nil) (line "") break)
-    (dolist (character (string-to-list (substring-no-properties text)))
-      (let ((next (concat line (char-to-string character))))
+(defun elpet--bubble-text-width ()
+  "Return the bubble's base text width, capped by its available window space."
+  (if (not (and (frame-live-p elpet--parent) (display-graphic-p elpet--parent)))
+      260
+    (let* ((window (if (and (not (frame-live-p elpet--frame))
+                            (window-live-p elpet--window))
+                       elpet--window
+                     (elpet--docking-window)))
+           (available (if window (window-body-width window t)
+                        (frame-pixel-width elpet--parent)))
+           (scale (/ elpet-width 220.0)))
+      ;; Reserve bubble padding, margins and the child-frame truncation column.
+      (max 1 (min 260 (floor (- (/ (- available (* 2 elpet-margin)
+                                      (frame-char-width elpet--parent)) scale)
+                                 32)))))))
+
+(defun elpet--text-lines (text &optional width)
+  "Wrap all of TEXT to WIDTH, defaulting to the available bubble text width."
+  (let ((lines nil) (line "") (width (or width (elpet--bubble-text-width))) break)
+    (dotimes (index (length text))
+      (let* ((character (aref text index))
+             (piece (substring text index (1+ index)))
+             (next (concat line piece)))
         (cond ((eq character ?\n) (push (string-trim-right line) lines) (setq line "" break nil))
-              ((and (> (length line) 0) (> (elpet--text-pixels next) 180))
+              ((and (> (length line) 0) (> (elpet--text-pixels next) width))
                (cond
                 ((memq character '(?\s ?\t))
                  (push (string-trim-right line) lines) (setq line ""))
@@ -350,7 +374,7 @@ Short messages use only the height they need."
                  (push (string-trim-right (substring line 0 break)) lines)
                  (setq line (string-trim-left (substring next (1+ break)))))
                 (t (push (string-trim-right line) lines)
-                   (setq line (char-to-string character)))))
+                   (setq line piece))))
               (t (setq line next)))
         (setq break (cl-position-if (lambda (c) (memq c '(?\s ?\t))) line :from-end t))))
     (push line lines)
@@ -358,20 +382,31 @@ Short messages use only the height they need."
 
 (defun elpet--wrap-text (text)
   "Return the visible, scrollable slice of TEXT's wrapped lines."
-  (let ((key (list text elpet-width
+  (let* ((width (elpet--bubble-text-width))
+         (key (list text elpet-width
                    (and (frame-live-p elpet--parent)
-                        (frame-parameter elpet--parent 'font)))))
+                        (frame-parameter elpet--parent 'font)) elpet--bubble-format width)))
     (unless (equal key elpet--bubble-wrap-key)
-      ;; Preserve a reader's position as streaming text grows.
-      (unless (and elpet--bubble-wrap-key
-                   (string-prefix-p (car elpet--bubble-wrap-key) text))
-        (setq elpet--bubble-offset 0))
-      (setq elpet--bubble-wrap-key key
-            elpet--bubble-all-lines (elpet--text-lines text)
-            elpet--bubble-max-width
-            (apply #'max 0 (mapcar #'elpet--text-pixels
-                                   elpet--bubble-all-lines)))))
-  (let ((limit (elpet--bubble-line-limit)))
+      (let ((appended (and elpet--bubble-wrap-key
+                           (not (equal (car elpet--bubble-wrap-key) text))
+                           (string-prefix-p (car elpet--bubble-wrap-key) text))))
+        (unless (or appended
+                    (equal (car elpet--bubble-wrap-key) text))
+          (setq elpet--bubble-offset 0 elpet--bubble-follow t))
+        (setq elpet--bubble-wrap-key key
+              elpet--bubble-all-lines
+              (elpet--text-lines (if (eq elpet--bubble-format 'markdown)
+                                    (elpet-markdown-render text) text) width)
+              elpet--bubble-max-width
+              (apply #'max 0 (mapcar #'elpet--text-pixels
+                                     elpet--bubble-all-lines)))
+        ;; Follow appended text unless the reader has scrolled away from it.
+        (when (and appended elpet--bubble-follow)
+          (setq elpet--bubble-offset
+                (max 0 (- (length elpet--bubble-all-lines)
+                          (elpet--bubble-line-limit))))))))
+  (let ((limit (elpet--bubble-line-limit))
+        (width (elpet--bubble-text-width)))
     (setq elpet--bubble-offset
           (max 0 (min elpet--bubble-offset
                       (- (length elpet--bubble-all-lines) limit))))
@@ -381,7 +416,7 @@ Short messages use only the height they need."
                (length elpet--bubble-all-lines))
         (let ((last (car (last lines))))
           (while (and (> (length last) 0)
-                      (> (elpet--text-pixels (concat last "…")) 180))
+                      (> (elpet--text-pixels (concat last "…")) width))
             (setq last (if (string-match "[ \t]+[^ \t]+\\'" last)
                            (substring last 0 (match-beginning 0))
                          (substring last 0 -1))))
@@ -403,11 +438,10 @@ Short messages use only the height they need."
             elpet--sprite-width (ceiling (* w scale))
             elpet--sprite-height (ceiling (* h scale)))))
   (setq elpet--bubble-lines (elpet--wrap-text text))
-  (when elpet--sprite-height
-    (setq elpet--display-width
-          (max elpet--sprite-width
-               (ceiling (* (+ 4 (max 88 (+ 28 elpet--bubble-max-width)))
-                           (/ elpet-width 220.0)))))))
+  (setq elpet--display-width
+        (max elpet--sprite-width
+             (ceiling (* (+ 4 (max 88 (+ 28 elpet--bubble-max-width)))
+                         (/ elpet-width 220.0))))))
 
 (defun elpet--bubble-svg (text)
   "Build a rounded multiline speech bubble containing a preview of TEXT."
@@ -443,10 +477,22 @@ Short messages use only the height they need."
     (svg-node svg 'path :d outline :fill background :stroke border
               :stroke-opacity 0.72 :stroke-width 0.8)
     (cl-loop for line in lines for index from 0 do
-             (svg-text svg line :x (+ left 14) :y (+ 22 (* index 22)) :text-anchor "start"
-                       :font-size 14 :font-weight 400
-                       :font-family "PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif"
-                       :fill foreground))
+             (let ((node (svg-node svg 'text :x (+ left 14) :y (+ 22 (* index 22))
+                                   :text-anchor "start" :font-size 14 :fill foreground
+                                   :xml:space "preserve"
+                                   :font-family "PingFang SC, Microsoft YaHei, Noto Sans CJK SC, sans-serif"))
+                   (start 0))
+               (while (< start (length line))
+                 (let* ((end (next-single-property-change start 'face line (length line)))
+                        (face (get-text-property start 'face line)))
+                   ;; Reuse svg-text's XML escaping, then make this run a span.
+                   (svg-text node (substring line start end)
+                             :font-weight (if (eq (plist-get face :weight) 'bold) 700 400)
+                             :font-style (if (eq (plist-get face :slant) 'italic) "italic" "normal")
+                             :text-decoration (if (plist-get face :underline) "underline" "none")
+                             :font-family (or (plist-get face :family) "inherit"))
+                   (setcar (car (last node)) 'tspan)
+                   (setq start end)))))
     (when (> (length elpet--bubble-all-lines) (length lines))
       (let* ((track (- body 20))
              (thumb (max 6 (* track (/ (float (length lines))
@@ -507,8 +553,9 @@ Short messages use only the height they need."
                                              (with-current-buffer output (buffer-string))
                                              'png t :width width :ascent 100 :scale 1)))
                                  (puthash key image (elpet-view-bubble-images view))
-                                 (if (eq view elpet--current-view) (setq elpet--dirty t)
-                                   (setf (elpet-view-dirty view) t)))
+                                 (if (eq view elpet--current-view)
+                                     (elpet--queue-refresh)
+                                   (elpet--with-view view (elpet--queue-refresh))))
                              (error (setf (elpet-view-last-error view)
                                           (error-message-string failure)))))
                        (when (buffer-live-p output) (kill-buffer output))
@@ -536,8 +583,9 @@ Short messages use only the height they need."
                                                   (mapcar #'string-width elpet--bubble-all-lines)))
                               2))))
       (dolist (line elpet--bubble-lines)
-        (insert (make-string padding ?\s)
-                (propertize (concat " " line " ") 'face 'elpet-bubble) "\n"))
+        (let ((styled (concat " " line " ")))
+          (add-face-text-property 0 (length styled) 'elpet-bubble t styled)
+          (insert (make-string padding ?\s) styled "\n")))
       (insert (make-string (max 0 (/ (1- columns) 2)) ?\s) "▾\n")
       (setq elpet--bubble-height
             (* (1+ (length elpet--bubble-lines)) (frame-char-height))))))
@@ -570,6 +618,7 @@ Short messages use only the height they need."
                   (create-image file nil nil :width elpet-width :ascent 'center :scale 1))))
     (unless image (error "Unable to load animation %s" name))
     (elpet--stop-image)
+    (setq elpet--bubble-format (plist-get message :format))
     (elpet--layout name text)
     (unless message (elpet--record-status text))
     (setq elpet--state state elpet--animation name elpet--image image
@@ -656,7 +705,7 @@ Short messages use only the height they need."
   "Reposition immediately when the parent FRAME's window layout changes."
   (elpet--with-default
    (when (and elpet-mode (eq frame elpet--parent))
-     (setq elpet--dirty t)
+     (elpet--queue-refresh)
      (when elpet--position-data (setq elpet--manual-position nil))
      (elpet--position))))
 
@@ -725,6 +774,29 @@ Side-window mode uses normal click bindings and cannot be dragged."
    (elpet--position)
    (elpet--save-preferences)))
 
+(defun elpet--queue-refresh ()
+  "Coalesce view changes into one guarded refresh on the next event-loop turn."
+  (setq elpet--dirty t)
+  (when (and elpet--current-view (elpet--resolve nil)
+             (not elpet--refresh-timer))
+    (let* ((pet elpet--default-instance)
+           (generation (elpet-instance-generation pet))
+           (view elpet--current-view)
+           timer)
+      (setq timer
+            (run-at-time
+             0 nil
+             (lambda ()
+               (when (and (elpet-instance-alive pet)
+                          (= generation (elpet-instance-generation pet))
+                          (eq pet elpet--default-instance)
+                          (eq view (elpet-instance-view pet)))
+                 (elpet--with-default
+                   (when (eq timer elpet--refresh-timer)
+                     (setq elpet--refresh-timer nil)
+                     (elpet--tick)))))))
+      (setq elpet--refresh-timer timer))))
+
 (defun elpet--tick ()
   "Update the display from current facts, without accepting stale callbacks."
   (elpet--with-default
@@ -775,10 +847,12 @@ Side-window mode uses normal click bindings and cannot be dragged."
                                      (plist-get request :actual-animation) elpet--animation)))
                (when (or elpet--dirty (not (equal text elpet--text))
                          (not (eq (plist-get message :action) elpet--bubble-action))
+                         (not (eq (plist-get message :format) elpet--bubble-format))
                          (not (equal (elpet--theme-key) elpet--pending-bubble)))
                  (unless message (elpet--record-status text))
                  (setq elpet--text text elpet--dirty nil
                        elpet--bubble-action (plist-get message :action)
+                       elpet--bubble-format (plist-get message :format)
                        elpet--pending-bubble (elpet--theme-key))
                  (elpet--draw))
                (elpet--position)
@@ -810,12 +884,13 @@ Side-window mode uses normal click bindings and cannot be dragged."
          (window-live-p elpet--window))))
 
 (defun elpet--theme-key ()
-  "Return the current bubble colors and scale for cache invalidation."
+  "Return the current bubble colors, scale and width for cache invalidation."
   (list elpet-width
         (face-background 'elpet-bubble elpet--parent t)
         (face-foreground 'elpet-bubble elpet--parent t)
         (face-attribute 'elpet-bubble :box elpet--parent t)
-        (frame-char-height elpet--parent)))
+        (frame-char-height elpet--parent)
+        (elpet--bubble-text-width)))
 
 ;;;###autoload
 (defun elpet-set-state (state &optional seconds)
@@ -908,6 +983,8 @@ Interactively, select an available animation for the default displayed pet."
   (setq elpet--unsubscribe nil)
   (when (timerp elpet--timer) (cancel-timer elpet--timer))
   (setq elpet--timer nil)
+  (when (timerp elpet--refresh-timer) (cancel-timer elpet--refresh-timer))
+  (setq elpet--refresh-timer nil)
   (when (process-live-p elpet--bubble-process) (delete-process elpet--bubble-process))
   (setq elpet--bubble-process nil)
   (elpet--stop-image)
@@ -1014,8 +1091,9 @@ Interactively, select an available animation for the default displayed pet."
            (lambda (_event)
              (when (and (elpet-instance-alive pet)
                         (= generation (elpet-instance-generation pet)))
-               (if (eq view elpet--current-view) (setq elpet--dirty t)
-                 (setf (elpet-view-dirty view) t)))) pet))
+               (if (eq view elpet--current-view)
+                   (elpet--queue-refresh)
+                 (elpet--with-view view (elpet--queue-refresh))))) pet))
     (setq elpet--timer
           (run-at-time 1 1
                        (lambda ()

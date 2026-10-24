@@ -13,21 +13,21 @@
 (require 'elpet-model)
 
 (cl-defstruct (elpet-view (:constructor elpet--make-view))
-	      buffer frame parent window timer image (bubble-height 0)
+	      buffer frame parent window timer refresh-timer image (bubble-height 0)
 	      (bubble-max-width 0)
 	      (bubble-images (make-hash-table :test #'equal))
 	      animation state override (next-action 0) compilations manual-position
 	      dragging crop-data image-slice sprite-height sprite-width display-width
-	      pack text bubble-action (dirty t) hidden bubble-process pending-bubble
-	      (bubble-lines nil) (bubble-offset 0) bubble-wrap-key bubble-all-lines
+	      pack text bubble-action bubble-format (dirty t) hidden bubble-process pending-bubble
+	      (bubble-lines nil) (bubble-offset 0) (bubble-follow t) bubble-wrap-key bubble-all-lines
               position-data (sequence 0) unsubscribe last-error)
 
 (defconst elpet--view-fields
-  '(buffer frame parent window timer image bubble-height bubble-max-width bubble-images
+  '(buffer frame parent window timer refresh-timer image bubble-height bubble-max-width bubble-images
 	   animation state override next-action compilations manual-position
 	   dragging crop-data image-slice sprite-height sprite-width display-width
-	   pack text bubble-action dirty hidden bubble-process pending-bubble bubble-lines
-           bubble-offset bubble-wrap-key bubble-all-lines position-data
+	   pack text bubble-action bubble-format dirty hidden bubble-process pending-bubble bubble-lines
+           bubble-offset bubble-follow bubble-wrap-key bubble-all-lines position-data
 	   sequence unsubscribe last-error))
 
 ;; These special variables form a dynamically bound renderer context only.
@@ -37,6 +37,7 @@
 (defvar elpet--parent nil)
 (defvar elpet--window nil)
 (defvar elpet--timer nil)
+(defvar elpet--refresh-timer nil)
 (defvar elpet--image nil)
 (defvar elpet--bubble-height 0)
 (defvar elpet--bubble-max-width 0)
@@ -56,12 +57,14 @@
 (defvar elpet--pack nil)
 (defvar elpet--text nil)
 (defvar elpet--bubble-action nil)
+(defvar elpet--bubble-format nil)
 (defvar elpet--dirty t)
 (defvar elpet--hidden nil)
 (defvar elpet--bubble-process nil)
 (defvar elpet--pending-bubble nil)
 (defvar elpet--bubble-lines nil)
 (defvar elpet--bubble-offset 0)
+(defvar elpet--bubble-follow t)
 (defvar elpet--bubble-wrap-key nil)
 (defvar elpet--bubble-all-lines nil)
 (defvar elpet--position-data nil)

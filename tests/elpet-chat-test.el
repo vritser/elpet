@@ -68,6 +68,23 @@
      (should-error (let ((inhibit-read-only nil)) (goto-char (point-min)) (insert "x")))
      (goto-char (point-max)) (insert "Next"))))
 
+(ert-deftest elpet-chat-bubble-markdown-keeps-original-stream-and-history ()
+  (elpet-chat-test--with-session
+   (insert "Format this") (elpet-chat-send)
+   (elpet-chat-test--reply (car calls) "**hel" '(:stream t))
+   (let ((request elpet-chat--active))
+     (cancel-timer (elpet-chat--request-timer request))
+     (elpet-chat--preview request)
+     (let ((message (car (elpet-instance-messages pet))))
+       (should (eq (plist-get message :format) 'markdown))
+       (should (equal (plist-get message :text) "**hel")))
+     (should-not (elpet-instance-history pet))
+     (elpet-chat-test--reply (car calls) "lo**" '(:stream t))
+     (elpet-chat-test--reply (car calls) t)
+     (should (equal elpet-chat--turns '("Format this" "**hello**")))
+     (should (equal (plist-get (car (elpet-instance-history pet)) :text) "**hello**"))
+     (should (eq (plist-get (car (elpet-instance-messages pet)) :format) 'markdown)))))
+
 (ert-deftest elpet-chat-nonstream-fallback-preserves-role-order ()
   (elpet-chat-test--with-session
    (insert "One") (elpet-chat-send)

@@ -38,9 +38,7 @@ if ls elpet*.el >/dev/null 2>&1; then
                     (lambda (source)
                       (expand-file-name (concat (file-name-nondirectory source) "c")
                                         (getenv "ELPET_BYTE_DIR"))))' \
-    -f batch-byte-compile elpet.el elpet-assets.el elpet-chat.el \
-    elpet-compilation.el elpet-events.el elpet-model.el elpet-pack.el \
-    elpet-persist.el elpet-render.el elpet-state.el
+    -f batch-byte-compile elpet*.el
 else
   printf 'FAIL byte-compile (no production files)\n'
   fail=1

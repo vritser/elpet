@@ -37,6 +37,7 @@ frames, timers, or processes.
 | `elpet-assets.el` | Character-pack parsing and validation, weighted action choice, crop metadata | Render or mutate instance state |
 | `elpet-pack.el` | Local character-pack archive/directory installation, checksum verification, extraction | Download files or activate the pack without the user's command |
 | `elpet-render.el` | `elpet-view` struct and the dynamic view-binding macros | Hold product behavior of its own |
+| `elpet-markdown.el` | Pure Markdown-subset conversion to styled bubble display text | Execute code, run modes, fetch resources, or mutate source text |
 | `elpet-persist.el` | Versioned JSON display preferences and position normalization | Persist live objects, task facts, or credentials |
 | `elpet-compilation.el` | `compile` integration as the built-in activity source | Leak compilation processes into state facts |
 | `elpet-chat.el` | Optional gptel conversation, personas, request lifecycle, JSON save/restore | Become a dependency of the standalone pet |
@@ -94,7 +95,17 @@ only its dynamically bound working set.
 
 A view owns its buffer, frame or window, timer, image, bubble cache, animation
 name, and dirty flag. The bubble is measured from the current frame font, wrapped
-to the pet's pixel width, and cached by text, width, font, and theme colors.
+to a base text width of 260 pixels scaled with `elpet-width`, and capped by the
+available pane width. Its canvas can widen independently of the sprite, even
+when transparent-margin trimming is disabled. The wrap and render cache keys
+include available text width, so resizing or moving between panes reflows text.
+Window-size changes queue a refresh without selecting a window.
+Model notifications and completed image conversions queue one coalesced refresh
+for the next event-loop turn, independently of the one-second state timer. The
+refresh timer belongs to the view, checks the captured instance generation and
+view identity, and is cancelled on cleanup. Chat keeps its 0.2-second preview
+throttle; the renderer does not add another polling delay. Appended text follows
+the tail until the reader scrolls up; scrolling back to the bottom resumes it.
 When `rsvg-convert` is available on macOS, SVG bubbles are converted to PNGs
 asynchronously; the SVG remains visible until the PNG is ready.
 
@@ -102,6 +113,14 @@ Display placement is a normalized offset inside a text area, not a screen
 coordinate. Positions are restored only when the user has not customized the
 value explicitly, are clamped to the current layout, and are disabled by
 `elpet-remember-position` or `elpet-state-file`.
+
+Messages opt in to Markdown with `elpet-say`'s `:format 'markdown`; chat marks
+both previews and final replies this way. Raw source remains in model messages,
+history, saved chat and the wrap cache key, so completing a delimiter cannot
+break append detection or reader scrolling. Only the display copy is parsed.
+Wrapping preserves face runs, SVG renders them as escaped text spans, and the
+non-SVG fallback uses the same native faces. The small parser is independent of
+markdown-mode and deliberately supports a subset, not full CommonMark.
 
 ## Chat presentation
 

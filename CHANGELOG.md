@@ -12,6 +12,11 @@ until a release changes the header, README, and this file together.
 
 ### Added
 
+- Chat bubbles render common Markdown headings, emphasis, lists, quotes, links
+  and code without requiring markdown-mode. Streaming previews retain raw source
+  and format completed inline markup as it arrives. Other message sources can
+  opt in with `elpet-say`'s `:format 'markdown`. (rationale: postmortem/005)
+
 - `scripts/verify.sh`, the one-shot verification gate: syntax and package
   header checks, strict byte-compilation, the full batch suite, a silent clean
   load, whitespace checks, and tree-junk detection.
@@ -37,6 +42,16 @@ until a release changes the header, README, and this file together.
   pixel/column measurement branches, and pack installation.
 
 ### Changed
+
+- Bubble text uses a wider 260-pixel limit at the default pet size, without
+  enlarging the character. Narrow panes reduce the width automatically and
+  resizing rewraps the message. Short replies remain compact.
+  (rationale: postmortem/006)
+
+- Streaming chat bubbles redraw as previews arrive instead of waiting for the
+  one-second state timer, and follow appended text beyond the visible line limit.
+  Scrolling up pauses following; returning to the bottom resumes it. Refreshes
+  are coalesced and cancelled when the pet stops. (rationale: postmortem/004)
 
 - Pet chat now uses a theme-aware title, numbered YOU / PET labels beside each
   message's first line, and an unnumbered YOU label for the editable draft. The

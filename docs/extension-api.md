@@ -65,6 +65,12 @@ Results are `(:ok t :reason accepted)`, `(:ok t :reason duplicate)`, or `(:ok ni
 
 ## Messages, history, and playback
 
+Pass `:format 'markdown` in `elpet-say`'s options to render the bubble's supported
+Markdown subset. Omit it or use nil for literal text. Formatting only changes the
+display copy; messages and history keep the full original source. It works
+without markdown-mode, and does not evaluate code or fetch linked resources.
+This option applies to direct calls; data-only `say` events remain plain text.
+
 `(elpet-say text &optional options pet)` returns a message ID, or `nil` for an inactive target. Supported options are `:source` (default `"local"`), `:priority` (default 20), positive `:seconds` (default 10), and `:replace-key`. A named external source must permit `say`, and the requested priority must fit its registered limit. Replacement affects messages with the same source and replacement key. Full messages remain in bounded history even when previews wrap or expire. Set `:history nil` for transient streaming previews, then submit the completed message with the default history behavior. An optional `:action` command symbol runs when the bubble is clicked; the character retains its normal click behavior. These two options apply to direct in-process calls, not to data-only `say` events.
 
 `M-x elpet-history` opens complete messages and changed status labels in a separate buffer. `elpet-history-limit` defaults to 100 entries. History lasts for the current instance and is not saved to disk. Redraws do not duplicate status entries.

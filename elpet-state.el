@@ -103,6 +103,7 @@
   "Submit TEXT to PET with OPTIONS and return its message ID.
 OPTIONS accepts :source (registered ID), :priority (0..source limit),
 :seconds (positive lifetime, default 10), :replace-key, :action (a command),
+:format (nil for plain text, or markdown for styled bubble text),
 and :history (nil to omit transient previews, defaults to t).
 Long messages remain complete in history, independent of the bubble preview."
   (when-let* ((instance (elpet--resolve pet)))
@@ -111,10 +112,12 @@ Long messages remain complete in history, independent of the bubble preview."
            (priority (or (plist-get options :priority) 20))
            (seconds (or (plist-get options :seconds) 10))
            (key (plist-get options :replace-key))
-           (action (plist-get options :action)))
+           (action (plist-get options :action))
+           (format (plist-get options :format)))
       (unless (and (stringp text) (> (length text) 0)
                    (numberp seconds) (> seconds 0)
                    (numberp priority) (<= 0 priority 100)
+                   (memq format '(nil markdown))
                    (or (null action) (and (symbolp action) (commandp action)))
                    (or (equal source "local")
                        (and registration (memq 'say (plist-get registration :kinds))
@@ -122,7 +125,7 @@ Long messages remain complete in history, independent of the bubble preview."
         (user-error "Invalid pet message or source permissions"))
       (let ((message (list :id (elpet--new-id instance "message")
                            :source source :text (substring-no-properties text)
-                           :priority priority :replace-key key :action action
+                           :priority priority :replace-key key :action action :format format
                            :time (elpet--now)
                            :expires (+ (elpet--now) seconds))))
         (setf (elpet-instance-messages instance)

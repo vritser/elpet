@@ -306,7 +306,7 @@ An input label has no exchange number."
           (elpet-say
            (elpet-chat--request-response request)
            (list :source elpet-chat--source :replace-key "reply" :history final
-                 :priority 40 :seconds (if final 20 10) :action 'elpet-chat)
+                 :priority 40 :seconds (if final 20 10) :action 'elpet-chat :format 'markdown)
            elpet-chat--pet))))
 
 (defun elpet-chat--preview (request)
